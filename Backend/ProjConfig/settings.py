@@ -30,9 +30,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Custom User Model — must be set before migrations
+AUTH_USER_MODEL = 'authentication.User' # it is necessary when we use custome user model 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,7 +42,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
+    'authentication',
     'store'
 ]
 
@@ -126,3 +129,21 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # we customized the default behavior of JWTAuthentication class which look in header for token
+        # now it looks in cookies
+        'authentication.custom_authentication.CookieJWTAuthentication',  # 👈 your custom auth class jwt + cookies
+    ]
+}
+
+from datetime import timedelta
+# need to setup jwt lifetimes
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=24),
+    'AUTH_COOKIE': 'Token',
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_SECURE': False,  # True in production
+    'AUTH_COOKIE_SAMESITE': 'Lax',
+}
