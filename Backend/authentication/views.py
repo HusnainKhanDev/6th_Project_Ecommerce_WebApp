@@ -41,3 +41,9 @@ class signin(APIView):
             max_age=24*60*60
         )
         return response
+    
+class logout(APIView):
+    def post(self, request):
+        response = Response({'message': 'Logout successful'}, status=200)
+        response.delete_cookie('Token')  # 👈 removes the cookie ✓
+        return response
