@@ -6,11 +6,14 @@ from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import get_user_model
 User = get_user_model()  # automatically gets whatever AUTH_USER_MODEL is set to
 from .serializers import User_Serializer
+from rest_framework.permissions import AllowAny
 
 class signup(APIView):
-    def post(self, request):
-        user_data = request.data.get('data')
+    permission_classes = [AllowAny]
 
+    def post(self, request):
+        user_data = request.data
+        print(user_data)
         # WRITING — incoming data passed with data= keyword
         serializedData = User_Serializer(data=user_data)  # ✅ data=request.data directly
         # validating incoming JSON → saving to DB ✓
@@ -22,6 +25,8 @@ class signup(APIView):
 
 
 class signin(APIView):
+    permission_classes = [AllowAny]
+    
     def post(self, request):
         email = request.data.get('email')     
         password = request.data.get('password') 

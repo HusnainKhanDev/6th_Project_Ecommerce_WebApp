@@ -147,3 +147,10 @@ SIMPLE_JWT = {
     'AUTH_COOKIE_SECURE': False,  # True in production
     'AUTH_COOKIE_SAMESITE': 'Lax',
 }
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Example for a React or other frontend
+    # Add as many origins as needed
+]
+
+CORS_ALLOW_CREDENTIALS = True
