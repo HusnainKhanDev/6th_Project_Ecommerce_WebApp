@@ -1,25 +1,26 @@
 import axios from 'axios'
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useDispatch } from "react-redux"
+import { setuser } from '../store/userSlice'
 
 const Login = () => {
   let [email, setemail] = useState("")
   let [password, setpassword] = useState("")
-
+  let navigate = useNavigate()
+  const dispatch = useDispatch();
 
   async function handlelogin(e) {
     e.preventDefault()
     try {
-      let user = await axios.post("http://127.0.0.1:8000/auth/signin/", {email, password}, {withCredentials: true})
-      console.log(user)
-      // navigate to hone set redux
+      let res = await axios.post("http://127.0.0.1:8000/auth/signin/", {email, password}, {withCredentials: true})
+      dispatch(setuser(res.data?.user))
+      navigate('/')
     } catch (error) {
-      console.log(error.response.data)
+      console.log(error.response?.data)
     }
 
   }
-
-
-
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-linear-to-br from-slate-900 via-indigo-950 to-slate-900">

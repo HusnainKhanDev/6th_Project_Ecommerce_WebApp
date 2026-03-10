@@ -35,8 +35,14 @@ class signin(APIView):
         if user is None:
             return Response({"error": "Invalid credentials"}, status=401)
         
+        
         token = AccessToken.for_user(user)
-        response = Response({'message': 'Login successful'}, status=200)
+        serialized_data = User_Serializer(user)
+        response = Response({
+            'message': 'Login successful',
+            'user': serialized_data.data 
+        }, status=200)
+        
         response.set_cookie(
             key='Token',
             value=str(token),  # ✅ convert to string
