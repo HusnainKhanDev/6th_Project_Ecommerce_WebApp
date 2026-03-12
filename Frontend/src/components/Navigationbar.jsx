@@ -5,9 +5,37 @@ import {
   NavbarToggle,
   NavbarCollapse,
   NavbarLink,
+  Button
 } from 'flowbite-react'
+import { useDispatch, useSelector } from 'react-redux'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
+import { setuser } from '../store/userSlice'
+
 
 const Navigationbar = () => {
+  const user = useSelector((state) => state.user.user)
+  const dispatch = useDispatch();
+  let action = Object.keys(user).length > 0 ? true : false
+  let navigate = useNavigate()
+
+  async function handleLoginLogout(action) {
+    if (action) {
+      try {
+        let logout = await axios.post(`${import.meta.env.VITE_BASE_URL}auth/logout/`)
+        console.log(logout)
+        dispatch(setuser({}))
+        logout.status === 200 ? navigate('/') : null
+      }
+      catch (error) {
+        console.log(error.response?.data)
+      }
+    }
+    else{
+      navigate('/login')
+    }
+  }
+  console.log(action)
   return (
     <Navbar
       fluid
@@ -25,6 +53,13 @@ const Navigationbar = () => {
         </div>
         <span className="text-lg font-bold text-white">ShopLux</span>
       </NavbarBrand>
+
+      <div className="flex items-center gap-3 md:order-2" onClick={() => handleLoginLogout(action)}>
+        <Button color={action ? "" : "red"} size="sm" className="bg-indigo-500 hover:bg-indigo-600 text-white focus:ring-0">
+          {action ? "logout" : "login"}
+        </Button>
+        <NavbarToggle className="text-gray-400 border-0 focus:ring-0 hover:bg-white/10" />
+      </div>
 
       <NavbarToggle className="text-gray-400 border-0 focus:ring-0 hover:bg-white/10" />
 
@@ -55,7 +90,7 @@ const Navigationbar = () => {
           About
         </NavbarLink>
       </NavbarCollapse>
-      
+
     </Navbar>
   )
 }

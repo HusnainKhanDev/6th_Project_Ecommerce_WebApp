@@ -23,8 +23,8 @@ class Product(models.Model):
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='products/')
-    color = models.CharField(max_length=50)
-    stock = models.PositiveIntegerField(default=0)
+    color = models.CharField(max_length=50, blank=True, null=True )
+    stock = models.PositiveIntegerField(default=0, blank=True, null=True )
 
     def __str__(self):
         return f"Image for {self.product.name}"
@@ -40,13 +40,14 @@ class Order(models.Model):
         ('cancelled',   'Cancelled'),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', blank=True)
     total_price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     created_At = models.DateTimeField(auto_now_add=True)
 
     shipping_address = models.TextField()
     city = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20)
+    whatsapp_number =  models.CharField(max_length=11)
 
     def __str__(self):
         return f"Order ID: {self.id}"
@@ -74,6 +75,11 @@ class CartItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     color = models.CharField(max_length=50)
     quantity = models.PositiveIntegerField(default=1)
+
+    class Meta: # work like a composite primary key
+        unique_together = ('cart', 'product', 'color')
+        # same product with same color cannot be added twice in same cart ✓
+        # but same product with different color is allowed ✓
 
     def __str__(self):
         return f"{self.product.name} × {self.quantity}"

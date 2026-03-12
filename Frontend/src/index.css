@@ -1,4 +1,6 @@
 @import "tailwindcss";
 @import "flowbite-react/plugin/tailwindcss";
+@import "slick-carousel/slick/slick.css";
+@import "slick-carousel/slick/slick-theme.css";
 @source "../.flowbite-react/class-list.json";
 @plugin "flowbite/plugin.js";

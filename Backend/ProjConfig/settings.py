@@ -130,6 +130,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+MEDIA_URL = "/media/" # tells the images location where they are
+MEDIA_ROOT = BASE_DIR / "media" # create the url to get images
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         # we customized the default behavior of JWTAuthentication class which look in header for token

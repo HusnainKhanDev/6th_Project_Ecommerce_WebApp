@@ -1,65 +1,85 @@
 import React, { useState } from 'react'
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion'
-import { Button, Badge } from 'flowbite-react'
+import Slider from 'react-slick'
+import { useDispatch } from 'react-redux'
+import { setcart } from '../store/cartSlice'
 
-const Description = ({ product, onClose }) => {
+const baseURL = import.meta.env.VITE_BASE_URL
+
+
+const getColor = (colorStr) => {
+  if (!colorStr) return 'grey'
+  const words = colorStr.trim().split(' ')
+  return words.length > 1 ? words[1] : words[0]
+}
+const SlickArrow = ({ onClick, direction }) => (
+  <button
+    onClick={onClick}
+    className={`absolute top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-slate-100 transition-colors ${direction === 'prev' ? 'left-2' : 'right-2'}`}
+  >
+    {direction === 'prev'
+      ? <svg className="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+      </svg>
+      : <svg className="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      </svg>
+    }
+  </button>
+)
+
+
+
+const Description = ({ product, setDesitem }) => {
   const [selectedColor, setSelectedColor] = useState(0)
-  const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
+  const [sliderRef, setSliderRef] = useState(null)
+  const dispatch = useDispatch();
 
-  const colors = [
-    { name: 'Midnight', hex: '#1e293b' },
-    { name: 'Silver', hex: '#cbd5e1' },
-    { name: 'Indigo', hex: '#6366f1' },
-    { name: 'Rose', hex: '#f43f5e' },
-  ]
-
-  // Multiple images using different angles/views
-  const images = [
-    product.image,
-    'https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front-dark.svg',
-    'https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-side.svg',
-    product.image,
-  ]
-
-  const handleAddToCart = () => {
+  const handleAddToCart = (item) => {
+    dispatch(setcart(item))
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
 
+  const originalPrice = parseFloat(product.price)
+  const discountedPrice = (originalPrice * (1 - product.discount / 100)).toFixed(2)
+
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 400,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    prevArrow: <SlickArrow direction="prev" />,
+    nextArrow: <SlickArrow direction="next" />,
+  }
   return (
     <AnimatePresence>
-      {/* Backdrop */}
       <motion.div
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
         style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        onClick={onClose}
+        onClick={() => setDesitem({})}
       >
-        {/* Modal Panel */}
         <motion.div
-          className="relative w-full max-w-4xl rounded-3xl overflow-hidden"
-          style={{
-            background: 'white',
-            boxShadow: '0 40px 100px rgba(0,0,0,0.4)',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-          }}
+          className="relative w-full max-w-4xl rounded-3xl overflow-hidden bg-white"
+          style={{ boxShadow: '0 40px 100px rgba(0,0,0,0.4)', maxHeight: '90vh', overflowY: 'auto' }}
           initial={{ opacity: 0, scale: 0.85, y: 40 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.85, y: 40 }}
           transition={{ type: 'spring', bounce: 0.3, duration: 0.5 }}
-          onClick={e => e.stopPropagation()} // prevent close on modal click
+          onClick={e => e.stopPropagation()}
         >
-          {/* Close Button */}
+
+          {/* Close */}
           <button
-            onClick={onClose}
-            className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-gray-100"
-            style={{ color: '#64748b' }}
+            onClick={() => setDesitem({})}
+            className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 text-slate-500"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -68,201 +88,151 @@ const Description = ({ product, onClose }) => {
 
           <div className="flex flex-col md:flex-row">
 
-            {/* ── Left: Image Gallery ── */}
-            <div className="md:w-1/2 p-8 flex flex-col gap-4"
-              style={{ background: '#f8fafc' }}>
+            {/* ── Left ── */}
+            <div className="md:w-1/2 p-8 bg-slate-50 flex flex-col gap-4">
 
-              {/* Main Image */}
-              <motion.div
-                className="rounded-2xl flex items-center justify-center p-8"
-                style={{ background: 'white', minHeight: '280px' }}
-              >
-                <AnimatePresence mode="wait">
-                  <motion.img
-                    key={selectedImage}
-                    src={images[selectedImage] || product.image}
-                    alt={product.name}
-                    className="w-full max-h-56 object-contain"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </AnimatePresence>
-              </motion.div>
+              {/* Slider */}
+              <div className="rounded-2xl bg-white relative" style={{ height: '280px' }}>
+                <Slider ref={setSliderRef} {...sliderSettings}>
+                  {product.images.map((img) => (
+                    <div key={img.id}>
+                      <div className="flex items-center justify-center bg-white p-6" style={{ height: '280px' }}>
+                        <img
+                          src={`${baseURL}${img.image}`}
+                          alt={img.color}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </Slider>
+              </div>
 
-              {/* Thumbnail Strip */}
-              <div className="flex gap-3">
-                {images.map((img, i) => (
+              {/* Color List */}
+              <div className="flex flex-col gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Available Colors
+                </p>
+                {product.images.map((img, i) => (
                   <button
-                    key={i}
-                    onClick={() => setSelectedImage(i)}
-                    className="rounded-xl p-2 flex items-center justify-center transition-all"
+                    key={img.id}
+                    onClick={() => {
+                      setSelectedColor(i)
+                      sliderRef?.slickGoTo(i)  // ✅ clicking color jumps slider to that image
+                    }}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl transition-all"
                     style={{
-                      background: 'white',
-                      border: selectedImage === i ? '2px solid #6366f1' : '2px solid transparent',
-                      width: '64px', height: '64px',
-                      boxShadow: selectedImage === i ? '0 0 0 3px rgba(99,102,241,0.15)' : 'none',
+                      background: selectedColor === i ? '#eef2ff' : 'white',
+                      border: selectedColor === i ? '1.5px solid #6366f1' : '1.5px solid #e2e8f0',
                     }}
                   >
-                    <img src={img || product.image} alt="" className="w-full h-full object-contain" />
+                    <div className="w-5 h-5 rounded-full border border-slate-200 shrink-0"
+                      style={{ background: getColor(img.color) }} />   {/* ✅ CSS understands 'black', 'red' etc directly */}
+                    <span className="text-sm font-medium text-slate-700 capitalize">
+                      {img.color}   {/* ✅ shows 'Grey' not 'Titanium Grey' */}
+                    </span>
+                    <span className="ml-auto text-xs text-slate-400">
+                      {img.stock} left
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* ── Right: Product Details ── */}
+            {/* ── Right ── */}
             <div className="md:w-1/2 p-8 flex flex-col gap-5">
 
-              {/* Badge + Name */}
               <div>
-                <Badge color="indigo" className="w-fit mb-3 text-xs">
-                  🏷️ {product.discount}
-                </Badge>
-                <h2 className="text-xl font-bold leading-snug mb-2"
-                  style={{ color: '#0f172a', fontFamily: 'Georgia, serif' }}>
+                <span className="text-xs font-semibold uppercase tracking-widest text-indigo-500">
+                  {product.category.name}
+                </span>
+                <h2 className="text-xl font-bold leading-snug mt-1 mb-2 text-slate-900"
+                  style={{ fontFamily: 'Georgia, serif' }}>
                   {product.name}
                 </h2>
-
-                {/* Stars */}
-                <div className="flex items-center gap-2">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} className="w-4 h-4"
-                        fill={i < Math.floor(product.rating) ? '#f59e0b' : '#e2e8f0'}
-                        viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <span className="text-sm" style={{ color: '#64748b' }}>
-                    {product.rating} ({product.reviews} reviews)
-                  </span>
-                </div>
-              </div>
-
-              {/* Price */}
-              <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-bold" style={{ color: '#0f172a', fontFamily: 'Georgia, serif' }}>
-                  {product.price}
-                </span>
-                <span className="text-sm line-through" style={{ color: '#94a3b8' }}>
-                  {/* original price approx */}
-                  ${(parseInt(product.price.replace(/\D/g, '')) * 1.35).toLocaleString()}
-                </span>
-              </div>
-
-              {/* Divider */}
-              <div className="h-px" style={{ background: '#f1f5f9' }} />
-
-              {/* Color Selector */}
-              <div>
-                <p className="text-sm font-semibold mb-3" style={{ color: '#0f172a' }}>
-                  Choose a Color —
-                  <span className="font-normal ml-1" style={{ color: '#6366f1' }}>
-                    {colors[selectedColor].name}
-                  </span>
+                <p className="text-sm text-slate-500 leading-relaxed">
+                  {product.description}
                 </p>
-                <div className="flex gap-3">
-                  {colors.map((color, i) => (
-                    <motion.button
-                      key={i}
-                      onClick={() => setSelectedColor(i)}
-                      className="w-8 h-8 rounded-full transition-all"
-                      style={{
-                        background: color.hex,
-                        border: selectedColor === i ? '3px solid #6366f1' : '3px solid transparent',
-                        outline: selectedColor === i ? '2px solid white' : 'none',
-                        outlineOffset: '1px',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                      }}
-                      whileHover={{ scale: 1.2 }}
-                      whileTap={{ scale: 0.9 }}
-                    />
-                  ))}
-                </div>
               </div>
 
-              {/* Quantity */}
+              <div className="flex items-baseline gap-3">
+                <span className="text-3xl font-bold text-slate-900"
+                  style={{ fontFamily: 'Georgia, serif' }}>
+                  ${discountedPrice}
+                </span>
+                <span className="text-sm line-through text-slate-400">
+                  ${originalPrice.toFixed(2)}
+                </span>
+                <span className="text-xs font-semibold px-2 py-1 rounded-md bg-indigo-100 text-indigo-600">
+                  {product.discount}% off
+                </span>
+              </div>
+
+              <div className="h-px bg-slate-100" />
+
               <div>
-                <p className="text-sm font-semibold mb-3" style={{ color: '#0f172a' }}>Quantity</p>
+                <p className="text-sm font-semibold mb-3 text-slate-900">Quantity</p>
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center rounded-xl overflow-hidden"
-                    style={{ border: '1px solid #e2e8f0' }}>
+                  <div className="flex items-center rounded-xl overflow-hidden border border-slate-200">
                     <motion.button
-                      className="w-10 h-10 flex items-center justify-center text-lg font-medium transition-colors hover:bg-gray-50"
-                      style={{ color: '#64748b' }}
+                      className="w-10 h-10 flex items-center justify-center text-lg font-medium hover:bg-gray-50 text-slate-500"
                       onClick={() => setQuantity(q => Math.max(1, q - 1))}
                       whileTap={{ scale: 0.85 }}
-                    >
-                      −
-                    </motion.button>
-                    <span className="w-10 text-center font-semibold text-sm"
-                      style={{ color: '#0f172a' }}>
+                    >−</motion.button>
+                    <span className="w-10 text-center font-semibold text-sm text-slate-900">
                       {quantity}
                     </span>
                     <motion.button
-                      className="w-10 h-10 flex items-center justify-center text-lg font-medium transition-colors hover:bg-gray-50"
-                      style={{ color: '#64748b' }}
+                      className="w-10 h-10 flex items-center justify-center text-lg font-medium hover:bg-gray-50 text-slate-500"
                       onClick={() => setQuantity(q => q + 1)}
                       whileTap={{ scale: 0.85 }}
-                    >
-                      +
-                    </motion.button>
+                    >+</motion.button>
                   </div>
-                  <span className="text-xs" style={{ color: '#ef4444' }}>
-                    ⚡ Only 12 items left!
+                  <span className="text-xs text-red-400">
+                    ⚡ Only {product.images[selectedColor]?.stock} items left!
                   </span>
                 </div>
               </div>
 
-              {/* Divider */}
-              <div className="h-px" style={{ background: '#f1f5f9' }} />
+              <div className="h-px bg-slate-100" />
 
-              {/* Buttons */}
               <div className="flex gap-3">
                 <motion.button
-                  className="flex-1 py-3 rounded-xl font-semibold text-sm text-white"
-                  style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)' }}
-                  whileHover={{ scale: 1.02, boxShadow: '0 8px 25px rgba(0,0,0,0.2)' }}
+                  className="flex-1 py-3 rounded-xl font-semibold text-sm text-white bg-linear-to-r from-slate-800 to-slate-900"
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                 >
                   Buy Now
                 </motion.button>
-
                 <motion.button
-                  className="flex-1 py-3 rounded-xl font-semibold text-sm"
+                  className="flex-1 py-3 rounded-xl font-semibold text-sm text-white transition-all duration-300"
                   style={{
                     background: added
                       ? 'linear-gradient(135deg, #10b981, #059669)'
                       : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                    color: 'white',
-                    transition: 'background 0.3s ease',
                   }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
-                  onClick={handleAddToCart}
+                  onClick={(e) => { e.stopPropagation(); handleAddToCart(product)}}
                 >
                   {added ? '✓ Added to Cart!' : 'Add to Cart'}
                 </motion.button>
               </div>
 
-              {/* Delivery info */}
-              <div className="flex flex-col gap-2 pt-1">
-                <div className="flex items-center gap-2 text-sm" style={{ color: '#10b981' }}>
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-emerald-500 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M5 13l4 4L19 7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   Free Delivery — arrives in 2-3 days
-                </div>
-                <div className="flex items-center gap-2 text-sm" style={{ color: '#10b981' }}>
+                </p>
+                <p className="text-sm text-emerald-500 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                   Free 30-day returns
-                </div>
+                </p>
               </div>
 
             </div>

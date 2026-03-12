@@ -1,25 +1,29 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux"
-import Cards from '../components/cards'
+import Cards from '../components/Cards'
 import Navigationbar from '../components/Navigationbar'
 import Banner from '../components/Banner'
 import axios from 'axios'
 import { setProducts } from '../store/productSlice'
+import Description from '../components/Description'
+import { setcart } from '../store/cartSlice'
 
 
 
 const Home = () => {
 
-  const user = useSelector((state) => state.user.user)
   const dispatch = useDispatch();
-  console.log(user)
+  let [DesItem, setDesitem] = useState({})
+  const items = useSelector((state) => state.cart.Cartitems)
+  const user = useSelector((state) => state.user.user)
+ 
 
+  //  fetching products
   useEffect(() => {
     async function fetch() {
       try {
-        let res = await axios.get("http://127.0.0.1:8000/store/products/", { withCredentials: true })
+        let res = await axios.get(`${import.meta.env.VITE_BASE_URL}store/products/`, { withCredentials: true })
         dispatch(setProducts(res.data))
-        console.log(res.data)
       } catch (error) {
         console.log(error.response?.data)
       }
@@ -27,6 +31,21 @@ const Home = () => {
 
     fetch()
   }, [dispatch])
+
+  // fetching cart
+  useEffect(() => {
+    async function fetchCart() {
+      if (user && items.length === 0) {
+        try {
+          let res = await axios.get(`${import.meta.env.VITE_BASE_URL}store/cart/`, { withCredentials: true })
+          dispatch(setcart(res.data))  // ✅ sends array, reducer handles it
+        } catch (error) {
+          console.log(error.response?.data)
+        }
+      }
+    }
+    fetchCart()
+  }, [user])
 
 
 
@@ -57,9 +76,13 @@ const Home = () => {
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 
-          <Cards />
+          <Cards passToDescription={setDesitem} />
 
         </div>
+
+        {Object.keys(DesItem).length > 0 ? <div>
+          <Description product={DesItem} setDesitem={setDesitem}/>
+        </div> : null}
 
       </div>
 
