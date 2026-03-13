@@ -25,11 +25,12 @@ class product_serializer(serializers.ModelSerializer):
         read_only_fields = ['created_at']
 
 class CartItemSerializer(serializers.ModelSerializer):
-    product = product_serializer(read_only=True)
-
     class Meta:
         model = CartItem
         fields = '__all__'
+        extra_kwargs = {
+            'cart': {'read_only': True}  # 👈 cart is injected manually, not from request
+        }
 
 
 class CartSerializer(serializers.ModelSerializer):

@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from .serializers import product_serializer, category_serializer, CartSerializer, CartItemSerializer
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from .models import Product, Category, Cart
 # Django ORM automatically converts ForeignKey into full related object 
 # DB stores raw integer (user_id = 3) but ORM converts it to full object when accessed via dot notation
@@ -20,6 +21,7 @@ class get_category(APIView):
         return Response(serializedData.data) 
     
 class GetCart(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         # always returns a tuple of 2 values → (object, boolean)
         # cart    → the Cart object (either fetched or newly created)
@@ -30,11 +32,14 @@ class GetCart(APIView):
     
 
 class add_to_cart(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         cart, created = Cart.objects.get_or_create(user=request.user)
-        items = request.data.get("items", [])
+        items = request.data.get("item")
+        print("cart:", cart)
+        print("items:", items)
 
-        serializer = CartItemSerializer(data=items, many=True) # many=True means it have to iterate over array
+        serializer = CartItemSerializer(data=items) 
 
         if serializer.is_valid():
             serializer.save(cart=cart) # we fetch cart separately and inject it manually during save

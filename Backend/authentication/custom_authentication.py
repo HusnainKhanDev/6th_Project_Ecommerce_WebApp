@@ -4,6 +4,7 @@ class CookieJWTAuthentication(JWTAuthentication):
     def authenticate(self, request):
         # Look for token in cookies instead of header
         token = request.COOKIES.get('Token')
+        print("Token", token)
 
         if token is None:
             return None  # no token, unauthenticated request

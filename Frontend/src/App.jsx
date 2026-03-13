@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Home from './pages/Home'
 import Signup from './pages/Signup'
 import Login from './pages/Login'
+import Cart from './pages/Cart'
 
 const App = () => {
 
@@ -18,6 +19,10 @@ const App = () => {
     {
       path: '/login',
       element: <div> <Login /> </div>
+    },
+    {
+      path: '/cart',
+      element: <div> <Cart /> </div>
     },
   ])
 

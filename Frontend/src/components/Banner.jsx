@@ -1,13 +1,26 @@
 import React from 'react'
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
+import { useSelector } from 'react-redux'
 
 const Banner = () => {
+  const user = useSelector((state) => state.user.user)
+  
   return (
     <div
-      className="w-full flex flex-col items-center justify-center text-center gap-16 py-24 px-8"
+      className="w-full flex flex-col items-center justify-center text-center gap-12 py-16 px-8"
       style={{ background: 'linear-gradient(180deg, #0f172a 0%, #312e81 50%, #0f172a 100%)' }}
     >
+      <motion.p
+        className="text-4xl text-white"
+        style={{ fontFamily: "Delius Swash Caps, cursive", fontWeight: 400 }}
+        initial={{ opacity: 0, scale: 0 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, type: 'spring', bounce: 0.6 }}
+      >
+       {"Welcome! " + user.full_name + " Happy Shoping"}
+      </motion.p>
 
       {/* Tag */}
       <motion.p

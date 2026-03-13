@@ -16,7 +16,7 @@ const Home = () => {
   let [DesItem, setDesitem] = useState({})
   const items = useSelector((state) => state.cart.Cartitems)
   const user = useSelector((state) => state.user.user)
- 
+  console.log(user)
 
   //  fetching products
   useEffect(() => {
@@ -35,9 +35,11 @@ const Home = () => {
   // fetching cart
   useEffect(() => {
     async function fetchCart() {
-      if (user && items.length === 0) {
+      if (Object.keys(user).length > 0 && items.length === 0) {
         try {
+          console.log("request gai")
           let res = await axios.get(`${import.meta.env.VITE_BASE_URL}store/cart/`, { withCredentials: true })
+          console.log(res.data)
           dispatch(setcart(res.data))  // ✅ sends array, reducer handles it
         } catch (error) {
           console.log(error.response?.data)
@@ -45,7 +47,7 @@ const Home = () => {
       }
     }
     fetchCart()
-  }, [user])
+  }, [user, dispatch, items])
 
 
 
