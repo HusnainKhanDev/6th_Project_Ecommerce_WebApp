@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from .serializers import product_serializer, category_serializer, CartSerializer, CartItemSerializer, OrderSerializer
 from rest_framework.response import Response
 from decimal import Decimal
+from django.db import IntegrityError
 from rest_framework.permissions import IsAuthenticated
 from .models import Product, Category, Cart, CartItem, Order, OrderItem
 # Django ORM automatically converts ForeignKey into full related object 
@@ -30,23 +31,33 @@ class get_cart(APIView):
         cart, created = Cart.objects.get_or_create(user=request.user) # this is called tuple unpacking
 
         serializedData = CartSerializer(cart)
-        print(serializedData.data)
         return Response(serializedData.data, status=200)
-    
+
+
+class delete_from_cart(APIView):
+    permission_classes = [IsAuthenticated]
+    def delete(self, request, c_id, p_id):
+        deleted_count, _ = CartItem.objects.get(cart_id=c_id, product_id=p_id).delete()
+
+        if deleted_count > 0:
+            return Response({"message": "Item removed"}, status=200)
+
 
 class add_to_cart(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
-        cart, created = Cart.objects.get_or_create(user=request.user)
+        cart, _ = Cart.objects.get_or_create(user=request.user)
         items = request.data.get("item")
 
-        serializer = CartItemSerializer(data=items) 
-
-        if serializer.is_valid():
-            serializer.save(cart=cart) # we fetch cart separately and inject it manually during save
-            return Response(serializer.data, status=201)
+        try:
+            serializer = CartItemSerializer(data=items)
+            if serializer.is_valid():
+                serializer.save(cart=cart) # we fetch cart separately and inject it manually during save
+                return Response(serializer.data, status=201)
+            return Response(serializer.errors, status=400)
         
-        return Response(serializer.errors, status=400)
+        except IntegrityError:
+            return Response({"error": "Item already in cart"}, status=400)  # handle duplicate 
 
 
 class orders(APIView):
@@ -85,7 +96,37 @@ class orders(APIView):
     
         return Response({'message': 'Order placed successfully', 'order_id': order.id}, status=201)
     
+class direct_buy(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        # get product details from request directly (no cart involved)
+        product_id = request.data.get('product_id')
+        color = request.data.get('color')
+        quantity = request.data.get('quantity')
 
+        product = Product.objects.get(id=product_id)
+
+        price = product.price * Decimal(1 - (product.discount / 100))
+        total = price * quantity
+
+        order = Order.objects.create(
+            user=request.user,
+            total_price=total,
+            shipping_address=request.data.get('shipping_address'),
+            city=request.data.get('city'),
+            postal_code=request.data.get('postal_code'),
+            whatsapp_number=request.data.get('whatsapp_number')
+        )
+
+        OrderItem.objects.create(
+            order=order,
+            product=product,
+            quantity=quantity,
+            color=color,
+            price=price
+        )
+
+        return Response({'message': 'Order placed successfully', 'order_id': order.id}, status=201)
 
 class get_orders(APIView):
     permission_classes = [IsAuthenticated]

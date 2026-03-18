@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Slider from 'react-slick'
 import { useDispatch } from 'react-redux'
 import { setcart } from '../store/cartSlice'
+import { toast } from 'react-toastify'
+import axios from 'axios'
 
 const baseURL = import.meta.env.VITE_BASE_URL
 
@@ -13,6 +15,7 @@ const getColor = (colorStr) => {
   const words = colorStr.trim().split(' ')
   return words.length > 1 ? words[1] : words[0]
 }
+
 const SlickArrow = ({ onClick, direction }) => (
   <button
     onClick={onClick}
@@ -33,15 +36,31 @@ const SlickArrow = ({ onClick, direction }) => (
 
 const Description = ({ product, setDesitem }) => {
   const [selectedColor, setSelectedColor] = useState(0)
+  const [Color, setcolor] = useState(product.images[0].color)
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
   const [sliderRef, setSliderRef] = useState(null)
   const dispatch = useDispatch();
 
-  const handleAddToCart = (item) => {
-    dispatch(setcart(item))
-    setAdded(true)
-    setTimeout(() => setAdded(false), 2000)
+    async function handleAddToCart(prod) {
+    if (!Color) {
+      toast.error("Please select one color")
+      console.log(Color)
+      return
+    }
+    let item = { product: prod.id, color: Color, quantity: quantity }
+    console.log(item)
+    try {
+      let res = await axios.post(`${import.meta.env.VITE_BASE_URL}store/add/cart/`, { "item": item }, { withCredentials: true })
+      if (res.status === 201) {
+        dispatch(setcart(res.data))
+        toast.success("Added to cart!")
+        setAdded(true)
+        setTimeout(() => setAdded(false), 2000)
+      }
+    } catch (error) {
+      console.log("error", error.response?.data)
+    }
   }
 
   const originalPrice = parseFloat(product.price)
@@ -116,8 +135,10 @@ const Description = ({ product, setDesitem }) => {
                 {product.images.map((img, i) => (
                   <button
                     key={img.id}
-                    onClick={() => {
+                    onClick={(e) => {
                       setSelectedColor(i)
+                      e.stopPropagation()
+                      setcolor(img.color)
                       sliderRef?.slickGoTo(i)  // ✅ clicking color jumps slider to that image
                     }}
                     className="flex items-center gap-3 px-3 py-2 rounded-xl transition-all"
