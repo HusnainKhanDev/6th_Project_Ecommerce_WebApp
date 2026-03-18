@@ -56,5 +56,5 @@ class signin(APIView):
 class logout(APIView):
     def post(self, request):
         response = Response({'message': 'Logout successful'}, status=200)
-        response.delete_cookie('Token')  # 👈 removes the cookie ✓
+        response.delete_cookie('Token')
         return response

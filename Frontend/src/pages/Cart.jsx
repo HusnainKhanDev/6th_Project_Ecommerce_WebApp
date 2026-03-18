@@ -2,18 +2,18 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, Links } from 'react-router-dom'
 
 const baseURL = import.meta.env.VITE_BASE_URL
 
 const Cart = () => {
   const items = useSelector((state) => state.cart.Cartitems)
-  console.log("cart: ", items)
+  console.log(items)
 
-  const totalPrice = items.reduce((acc, product) => {
-    const price = parseFloat(product.price)
-    const discounted = price * (1 - (product.discount / 100))
-    return acc + discounted
+  const totalPrice = items.reduce((acc, item) => {
+    const price = parseFloat(item.product_detail.price)
+    const discounted = price * (1 - item.product_detail.discount / 100)
+    return acc + (discounted * item.quantity)
   }, 0)
 
   if (items.length === 0) {
@@ -29,10 +29,10 @@ const Cart = () => {
           Your cart is empty
         </h2>
         <p className="text-sm text-slate-400">Add some products to get started</p>
-        <a href="/"
+        <Link to="/"
           className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 transition-colors">
           Shop Now
-        </a>
+        </Link>
       </div>
     )
   }
@@ -59,14 +59,19 @@ const Cart = () => {
 
         {/* ── Cart Items ── */}
         <div className="flex-1 flex flex-col gap-4">
-          {items.map((product, index) => {
-            const firstImage = product.images?.[0]
+          {items.map((item, index) => {
+
+            const product = item.product_detail
             const originalPrice = parseFloat(product.price)
             const discountedPrice = (originalPrice * (1 - product.discount / 100)).toFixed(2)
 
+            // find image matching selected color
+            const matchedImage = product.images.find(img => img.color === item.color)
+            const displayImage = matchedImage || product.images[0]
+
             return (
               <motion.div
-                key={product.id}
+                key={item.id}
                 className="bg-white rounded-2xl p-4 flex gap-4 items-center border border-slate-100"
                 style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
                 initial={{ opacity: 0, y: 20 }}
@@ -76,8 +81,8 @@ const Cart = () => {
                 {/* Image */}
                 <div className="w-24 h-24 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 p-2">
                   <img
-                    src={`${baseURL}${firstImage?.image}`}
-                    alt={product?.name}
+                    src={`${baseURL}${displayImage?.image}`}
+                    alt={product.name}
                     className="w-full h-full object-contain"
                   />
                 </div>
@@ -89,15 +94,20 @@ const Cart = () => {
                   </span>
                   <h3 className="text-sm font-semibold text-slate-900 mt-0.5 line-clamp-2"
                     style={{ fontFamily: 'Georgia, serif' }}>
-                    {product?.name}
+                    {product.name}
                   </h3>
 
-                  {/* Color */}
-                  {firstImage?.color && (
-                    <p className="text-xs text-slate-400 mt-1 capitalize">
-                      Color: {firstImage.color}
+                  {/* Color + Quantity */}
+                  <div className="flex items-center gap-3 mt-1">
+                    {item.color && (
+                      <p className="text-xs text-slate-400 capitalize">
+                        Color: {item.color}
+                      </p>
+                    )}
+                    <p className="text-xs text-slate-400">
+                      Qty: {item.quantity}
                     </p>
-                  )}
+                  </div>
 
                   {/* Price row */}
                   <div className="flex items-center gap-2 mt-2">
@@ -119,7 +129,7 @@ const Cart = () => {
 
                 {/* Remove Button */}
                 <button
-                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 transition-colors shrink-0"
+                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors shrink-0"
                   style={{ color: '#94a3b8' }}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -148,15 +158,16 @@ const Cart = () => {
 
             {/* Item breakdown */}
             <div className="flex flex-col gap-3 mb-5">
-              {items.map((product) => {
+              {items.map((item) => {
+                const product = item.product_detail
                 const discountedPrice = (parseFloat(product.price) * (1 - product.discount / 100)).toFixed(2)
                 return (
-                  <div key={product.id} className="flex items-center justify-between">
+                  <div key={item.id} className="flex items-center justify-between">
                     <span className="text-sm text-slate-500 line-clamp-1 flex-1 mr-2">
-                      {product?.name}
+                      {product.name}
                     </span>
                     <span className="text-sm font-semibold text-slate-900 shrink-0">
-                      ${discountedPrice}
+                      ${discountedPrice} × {item.quantity}
                     </span>
                   </div>
                 )
@@ -180,13 +191,13 @@ const Cart = () => {
             </div>
 
             {/* Checkout Button */}
-            <button
-              className="w-full py-3.5 rounded-xl font-semibold text-sm text-white transition-opacity hover:opacity-90 bg-linear-to-r from-indigo-500 to-purple-600"
+            <Link to="/order"> 
+            <button  className="w-full py-3.5 rounded-xl font-semibold text-sm text-white transition-opacity hover:opacity-90 bg-linear-to-r from-indigo-500 to-purple-600 hover:cursor-pointer"
             >
-              Proceed to Checkout →
+              Proceed to Checkout → 
             </button>
+            </Link> 
 
-            {/* Security note */}
             <p className="text-xs text-slate-400 text-center mt-3 flex items-center justify-center gap-1">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Order, OrderItem, ProductImage, Cart
+from .models import Category, Product, Order, OrderItem, ProductImage, Cart, CartItem
 
 
 @admin.register(Category)
@@ -38,6 +38,13 @@ class OrderItemAdmin(admin.ModelAdmin):
     list_display = ('id', 'order', 'product', 'quantity', 'price')
     list_filter = ('order',)
 
+
+class CartItemsInline(admin.TabularInline):
+    model =  CartItem
+    extra = 0 
+
+
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
     list_display = ('id', 'user')
+    inlines = [CartItemsInline]

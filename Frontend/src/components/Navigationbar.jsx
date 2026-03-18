@@ -21,7 +21,7 @@ const Navigationbar = () => {
     if (action) {
       try {
         console.log("ya chala")
-        let logout = await axios.post(`${import.meta.env.VITE_BASE_URL}auth/logout/`)
+        let logout = await axios.post(`${import.meta.env.VITE_BASE_URL}auth/logout/`, { withCredentials: true })
         dispatch(setuser({}))
         console.log(logout)
         logout.status === 200 ? navigate('/login') : null
@@ -76,10 +76,10 @@ const Navigationbar = () => {
           style={{ color: '#94a3b8' }}>
           Products
         </Link>
-        <Link to="/categories"
+        <Link to="/track/order"
           className="block py-2 font-medium md:hover:text-indigo-400 transition-colors"
           style={{ color: '#94a3b8' }}>
-          Categories
+          Track order
         </Link>
         <Link to="/cart"
           className="block py-2 font-medium md:hover:text-indigo-400 transition-colors"
