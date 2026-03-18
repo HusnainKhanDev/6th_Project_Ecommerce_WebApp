@@ -18,8 +18,8 @@ const Home = () => {
   const cart = useSelector((state) => state.cart.Cartitems)
   const orders = useSelector((state) => state.orders.Orderitems)
   const user = useSelector((state) => state.user.user)
-  const items = useRef(cart)
   const Orderitems = useRef(orders)
+  const items = useRef(cart)
   let [FilteredProducts, setFilteredProducts] = useState([])
   let [isFilterActive, setIsFilterActive] = useState(false)
   
@@ -57,12 +57,9 @@ const Home = () => {
   // fetch orders
   useEffect(() => {
     async function fetchOrder() {
-      console.log("Order ka pucha", Orderitems.current.length)
       if (Object.keys(user).length > 0 && Orderitems.current.length === 0) {
-        console.log("Order Agaya")
         try {
           let res = await axios.get(`${import.meta.env.VITE_BASE_URL}store/get/order/`, { withCredentials: true })
-          console.log(res.data)
           dispatch(setOrder(res.data))  // ✅ sends array, reducer handles it
         } catch (error) {
           console.log(error.response?.data)

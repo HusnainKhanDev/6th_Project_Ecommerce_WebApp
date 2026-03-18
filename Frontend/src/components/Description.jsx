@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux'
 import { setcart } from '../store/cartSlice'
 import { toast } from 'react-toastify'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 const baseURL = import.meta.env.VITE_BASE_URL
 
@@ -41,6 +42,12 @@ const Description = ({ product, setDesitem }) => {
   const [added, setAdded] = useState(false)
   const [sliderRef, setSliderRef] = useState(null)
   const dispatch = useDispatch();
+  const navigate = useNavigate()
+
+
+    function handleBuy(prod){
+      navigate('/order', {state: {"product_detail": prod, "quantity":quantity, "color": Color, "id": prod.id}})
+    }
 
     async function handleAddToCart(prod) {
     if (!Color) {
@@ -61,7 +68,7 @@ const Description = ({ product, setDesitem }) => {
     } catch (error) {
       console.log("error", error.response?.data)
     }
-  }
+    }
 
   const originalPrice = parseFloat(product.price)
   const discountedPrice = (originalPrice * (1 - product.discount / 100)).toFixed(2)
@@ -75,6 +82,7 @@ const Description = ({ product, setDesitem }) => {
     prevArrow: <SlickArrow direction="prev" />,
     nextArrow: <SlickArrow direction="next" />,
   }
+
   return (
     <AnimatePresence>
       <motion.div
@@ -222,6 +230,7 @@ const Description = ({ product, setDesitem }) => {
                   className="flex-1 py-3 rounded-xl font-semibold text-sm text-white bg-linear-to-r from-slate-800 to-slate-900"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
+                  onClick={() => handleBuy(product)}
                 >
                   Buy Now
                 </motion.button>

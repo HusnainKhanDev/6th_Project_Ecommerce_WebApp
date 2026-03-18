@@ -30,7 +30,6 @@ class ProductImage(models.Model):
         return f"Image for {self.product.name}"
 
 
-
 class Order(models.Model):
     STATUS_CHOICES = [
         ('pending',     'Pending'),

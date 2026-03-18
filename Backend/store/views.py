@@ -100,7 +100,7 @@ class direct_buy(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         # get product details from request directly (no cart involved)
-        product_id = request.data.get('product_id')
+        product_id = request.data.get('id')
         color = request.data.get('color')
         quantity = request.data.get('quantity')
 

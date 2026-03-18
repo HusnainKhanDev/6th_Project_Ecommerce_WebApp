@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
-import { useSelector } from 'react-redux'
+import React, { useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import axios from 'axios'
+import { setOrder } from '../store/orderSlice'
 
 const baseURL = import.meta.env.VITE_BASE_URL
 
@@ -11,35 +12,74 @@ const inputClass = "w-full px-4 py-3 rounded-xl text-sm text-slate-800 outline-n
 const labelClass = "block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-widest"
 
 const Order = () => {
-    const items = useSelector((state) => state.cart.Cartitems)
+    const location = useLocation();
+    const dispatch = useDispatch();
 
+    const cartItems = useSelector((state) => state.cart.Cartitems)
+    const items = location.state ? [location.state] : cartItems
+    console.log(items)
     const [postal_code, setpostal_code] = useState()
     const [shipping_address, setshipping_address] = useState()
     const [whatsapp_number, setwhatsapp_number] = useState()
     const [city, setcity] = useState()
 
-    const handleOrder = async () => {
-        let data = { postal_code, shipping_address, whatsapp_number, city }
-        try{
-            let res = await axios.post(`${import.meta.env.VITE_BASE_URL}/store/order/`, data, {withCredentials: true})
-            console.log(res.data)
+
+    const orders = useSelector((state) => state.orders.Orderitems)
+    const user = useSelector((state) => state.user.user)
+    const Orderitems = useRef(orders)
+
+    async function fetchOrder() {
+        if (Object.keys(user).length > 0 && Orderitems.current.length === 0) {
+            try {
+                let res = await axios.get(`${import.meta.env.VITE_BASE_URL}store/get/order/`, { withCredentials: true })
+                dispatch(setOrder(res.data))  // ✅ sends array, reducer handles it
+            } catch (error) {
+                console.log(error.response?.data)
+            }
         }
-        catch(error){
+    }
+
+
+    const handleOrder = async () => {
+        try {
+            if (location.state) {
+                let req = {
+                    postal_code, shipping_address, whatsapp_number, city,
+                    id: items[0].id,
+                    color: items[0].color,
+                    quantity: items[0].quantity
+                }
+                console.log(req)
+                let res = await axios.post(`${baseURL}store/buy/`, req, { withCredentials: true })
+                console.log(res.data)
+                fetchOrder()
+            } else {
+                let res = await axios.post(`${baseURL}store/order/`,
+                    { postal_code, shipping_address, whatsapp_number, city },
+                    { withCredentials: true }
+                )
+                console.log(res.data)
+                fetchOrder()
+            }
+        } catch (error) {
             console.log(error.response?.data)
         }
     }
 
-    const totalPrice = items.reduce((acc, item) => {
+
+
+    let totalPrice = items.reduce((acc, item) => {
         const price = parseFloat(item.product_detail.price)
         const discounted = price * (1 - item.product_detail.discount / 100)
         return acc + (discounted * item.quantity)
     }, 0)
 
-    const savedAmount = items.reduce((acc, item) => {
+    let savedAmount = items.reduce((acc, item) => {
         const price = parseFloat(item.product_detail.price)
         const saved = price * (item.product_detail.discount / 100)
         return acc + (saved * item.quantity)
     }, 0)
+
 
     return (
         <div className="min-h-screen flex flex-col lg:flex-row" style={{ fontFamily: "'Palatino Linotype', Palatino, serif" }}>
