@@ -19,7 +19,7 @@ const Banner = () => {
         viewport={{ once: true }}
         transition={{ duration: 0.8, type: 'spring', bounce: 0.6 }}
       >
-       {"Welcome! " + user.full_name + " Happy Shoping"}
+       {`Welcome! ${user.full_name || "User"} Happy Shoping`}
       </motion.p>
 
       {/* Tag */}

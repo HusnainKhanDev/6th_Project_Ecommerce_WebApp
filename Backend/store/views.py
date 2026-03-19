@@ -59,6 +59,27 @@ class add_to_cart(APIView):
         except IntegrityError:
             return Response({"error": "Item already in cart"}, status=400)  # handle duplicate 
 
+class update_cart_qty(APIView):
+    permission_classes = [IsAuthenticated]
+    def patch(self, request):
+        cart = request.data.get("cart")
+        product = request.data.get("product")
+        color = request.data.get("color")
+        quantity = request.data.get("newQty")  # send +1 or -1 from frontend
+
+        try:
+            item = CartItem.objects.get(cart_id=cart, product_id=product, color=color)
+            item.quantity = quantity 
+
+            if item.quantity <= 0:
+                item.delete()  # remove item if quantity reaches 0
+                return Response({"message": "Item removed"}, status=200)
+
+            item.save()
+            return Response({"message": "Quantity updated successfully"}, status=200)
+        
+        except CartItem.DoesNotExist:
+            return Response({"error": "Item not found"}, status=404)
 
 class orders(APIView):
     permission_classes = [IsAuthenticated]

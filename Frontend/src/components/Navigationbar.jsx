@@ -21,7 +21,7 @@ const Navigationbar = () => {
     if (action) {
       try {
         console.log("ya chala")
-        let logout = await axios.post(`${import.meta.env.VITE_BASE_URL}auth/logout/`, { withCredentials: true })
+        let logout = await axios.post(`${import.meta.env.VITE_BASE_URL}auth/logout/`, {}, { withCredentials: true })
         dispatch(setuser({}))
         console.log(logout)
         logout.status === 200 ? navigate('/login') : null
@@ -54,9 +54,8 @@ const Navigationbar = () => {
       {/* Login/Logout + Toggle */}
       <div className="flex items-center gap-3 md:order-2">
         <Button
-          color={action ? "" : "red"}
           size="md"
-          className="bg-linear-to-r from-red-400 via-red-500 to-red-600 text-white hover:bg-linear-to-br focus:ring-0"
+          className={`${!action ? 'bg-linear-to-r from-red-400 via-red-500 to-red-600' : 'bg-linear-to-r from-blue-500 via-blue-600 to-blue-700'} text-white hover:bg-linear-to-br focus:ring-0`}
           onClick={() => handleLoginLogout(action)}
         >
           {action ? 'Logout' : 'Login'}

@@ -140,7 +140,8 @@ const Description = ({ product, setDesitem }) => {
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Available Colors
                 </p>
-                {product.images.map((img, i) => (
+                {product.images.map((img, i) => {
+                  return img.color?.length > 0 ? (
                   <button
                     key={img.id}
                     onClick={(e) => {
@@ -163,8 +164,8 @@ const Description = ({ product, setDesitem }) => {
                     <span className="ml-auto text-xs text-slate-400">
                       {img.stock} left
                     </span>
-                  </button>
-                ))}
+                  </button>) : null
+                })}
               </div>
             </div>
 

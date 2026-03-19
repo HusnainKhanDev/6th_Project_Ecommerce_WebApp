@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
@@ -13,19 +13,45 @@ const Cart = () => {
   console.log(items)
   let dispatch = useDispatch()
 
-  async function handleDelete(cart, product){
+
+  async function handleDelete(cart, product) {
     console.log(cart, product)
-      try{
-        let res = await axios.delete(`${import.meta.env.VITE_BASE_URL}store/cart/delete/item/${cart}/${product}`, { withCredentials: true })
-        if(res.status === 200){
-          let newItems = items.filter((i) => i.cart != cart || i.product != product) 
-          dispatch(setcart(newItems))
-          
-        }
+    try {
+      let res = await axios.delete(`${import.meta.env.VITE_BASE_URL}store/cart/delete/item/${cart}/${product}`, { withCredentials: true })
+      if (res.status === 200) {
+        let newItems = items.filter((i) => i.cart != cart || i.product != product)
+        dispatch(setcart(newItems))
+
       }
-      catch(error){
+    }
+    catch (error) {
+      console.log(error.response?.data)
+    }
+  }
+
+  const debounceRef = useRef(null)
+
+  async function handleQuantity(cart, product, color, newQty) {
+    const previousItems = [...items]  // ✅ save before changing
+
+    // ✅ update UI immediately
+    const newItems = items.map((i) =>
+      i.cart === cart && i.product === product
+        ? { ...i, quantity: newQty }
+        : i
+    )
+    dispatch(setcart(newItems))
+
+    // ✅ debounce — wait 800ms after last click
+    clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(async () => {
+      try {
+        await axios.patch(`${baseURL}store/cart/update/quantity/`, { cart, product, color, newQty }, { withCredentials: true })
+      } catch (error) {
         console.log(error.response?.data)
+        dispatch(setcart(previousItems))  // ✅ revert to saved copy
       }
+    }, 800)
   }
 
   const totalPrice = items.reduce((acc, item) => {
@@ -122,9 +148,31 @@ const Cart = () => {
                         Color: {item.color}
                       </p>
                     )}
-                    <p className="text-xs text-slate-400">
-                      Qty: {item.quantity}
-                    </p>
+
+                    {/* ✅ Quantity controls */}
+                    <div className="flex items-center rounded-lg overflow-hidden border border-slate-200">
+                      <button
+                        className="w-7 h-7 flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors text-sm font-medium"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (item.quantity > 1) handleQuantity(item.cart, item.product, item.color, item.quantity - 1)
+                        }}
+                      >
+                        −
+                      </button>
+                      <span className="w-7 text-center text-xs font-semibold text-slate-900">
+                        {item.quantity}
+                      </span>
+                      <button
+                        className="w-7 h-7 flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors text-sm font-medium"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleQuantity(item.cart, item.product, item.color, item.quantity + 1)
+                        }}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
 
                   {/* Price row */}
@@ -207,12 +255,12 @@ const Cart = () => {
             </div>
 
             {/* Checkout Button */}
-            <Link to="/order"> 
-            <button  className="w-full py-3.5 rounded-xl font-semibold text-sm text-white transition-opacity hover:opacity-90 bg-linear-to-r from-indigo-500 to-purple-600 hover:cursor-pointer"
-            >
-              Proceed to Checkout → 
-            </button>
-            </Link> 
+            <Link to="/order">
+              <button className="w-full py-3.5 rounded-xl font-semibold text-sm text-white transition-opacity hover:opacity-90 bg-linear-to-r from-indigo-500 to-purple-600 hover:cursor-pointer"
+              >
+                Proceed to Checkout →
+              </button>
+            </Link>
 
             <p className="text-xs text-slate-400 text-center mt-3 flex items-center justify-center gap-1">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

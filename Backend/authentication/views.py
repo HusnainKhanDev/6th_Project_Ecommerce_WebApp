@@ -4,9 +4,9 @@ from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import get_user_model
-User = get_user_model()  # automatically gets whatever AUTH_USER_MODEL is set to
+User = get_user_model()  # automatically gets whatever AUTH_USER_MODEL is set in settings.py
 from .serializers import User_Serializer
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 class signup(APIView):
     permission_classes = [AllowAny]
@@ -54,7 +54,19 @@ class signin(APIView):
         return response
     
 class logout(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         response = Response({'message': 'Logout successful'}, status=200)
-        response.delete_cookie('Token')
+        response.delete_cookie(
+            key='Token',
+            samesite='Lax',
+        )
         return response
+
+class get_user(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = User_Serializer(request.user)
+        return Response(serializer.data, status=200)
+    
