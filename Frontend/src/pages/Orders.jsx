@@ -5,6 +5,8 @@ import { motion } from 'framer-motion'
 import { Link, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { setOrder } from '../store/orderSlice'
+import { toast } from 'react-toastify'
+import { setcart } from '../store/cartSlice'
 
 const baseURL = import.meta.env.VITE_BASE_URL
 
@@ -18,10 +20,10 @@ const Order = () => {
     const cartItems = useSelector((state) => state.cart.Cartitems)
     const items = location.state ? [location.state] : cartItems
     console.log(items)
-    const [postal_code, setpostal_code] = useState()
-    const [shipping_address, setshipping_address] = useState()
-    const [whatsapp_number, setwhatsapp_number] = useState()
-    const [city, setcity] = useState()
+    const [postal_code, setpostal_code] = useState(null)
+    const [shipping_address, setshipping_address] = useState(null)
+    const [whatsapp_number, setwhatsapp_number] = useState(null)
+    const [city, setcity] = useState(null)
 
 
     const orders = useSelector((state) => state.orders.Orderitems)
@@ -42,6 +44,12 @@ const Order = () => {
 
     const handleOrder = async () => {
         try {
+
+            if(!postal_code || !shipping_address || !whatsapp_number || !city){
+                toast.error("All fields are required")
+                return
+            }
+
             if (location.state) {
                 let req = {
                     postal_code, shipping_address, whatsapp_number, city,
@@ -52,6 +60,12 @@ const Order = () => {
                 console.log(req)
                 let res = await axios.post(`${baseURL}store/buy/`, req, { withCredentials: true })
                 console.log(res.data)
+                dispatch(setcart([]))
+                toast.success("Order Placed Successfully")
+                setpostal_code("")
+                setshipping_address("")
+                setwhatsapp_number("")
+                setcity("")
                 fetchOrder()
             } else {
                 let res = await axios.post(`${baseURL}store/order/`,
@@ -60,6 +74,13 @@ const Order = () => {
                 )
                 console.log(res.data)
                 fetchOrder()
+                                console.log(res.data)
+                dispatch(setcart([]))
+                toast.success("Order Placed Successfully")
+                setpostal_code("")
+                setshipping_address("")
+                setwhatsapp_number("")
+                setcity("")
             }
         } catch (error) {
             console.log(error.response?.data)
@@ -239,6 +260,7 @@ const Order = () => {
                             <label className={labelClass}>Shipping Address</label>
                             <textarea
                                 name="shipping_address"
+                                required
                                 value={shipping_address}
                                 onChange={(e) => setshipping_address(e.target.value)}
                                 placeholder="House #, Street, Area, Neighbourhood..."
@@ -257,6 +279,7 @@ const Order = () => {
                             <input
                                 type="text"
                                 name="city"
+                                required
                                 value={city}
                                 onChange={(e) => setcity(e.target.value)}
                                 placeholder="e.g. Karachi"
@@ -276,6 +299,7 @@ const Order = () => {
                                 <input
                                     type="text"
                                     name="postal_code"
+                                    required
                                     value={postal_code}
                                     onChange={(e) => setpostal_code(e.target.value)}
                                     placeholder="75500"
@@ -288,6 +312,7 @@ const Order = () => {
                                     type="tel"
                                     name="whatsapp_number"
                                     value={whatsapp_number}
+                                    required 
                                     onChange={(e) => setwhatsapp_number(e.target.value)}
                                     placeholder="+92 300 0000000"
                                     className={inputClass}

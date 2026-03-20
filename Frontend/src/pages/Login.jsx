@@ -1,14 +1,16 @@
 import axios from 'axios'
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch } from "react-redux"
 import { setuser } from '../store/userSlice'
 
 const Login = () => {
   let [email, setemail] = useState("")
   let [password, setpassword] = useState("")
+  let [error, seterror] = useState(null)
   let navigate = useNavigate()
   const dispatch = useDispatch();
+
 
   async function handlelogin(e) {
     e.preventDefault()
@@ -17,7 +19,9 @@ const Login = () => {
       dispatch(setuser(res.data?.user))
       navigate('/')
     } catch (error) {
-      console.log(error.response?.data)
+      seterror(error.response?.data?.error)
+      setTimeout(() => {seterror(null)}, 1500)
+      console.log(error.response?.data?.error)
     }
   }
 
@@ -38,7 +42,7 @@ const Login = () => {
           <h1 className="text-xl font-bold text-slate-900" style={{ fontFamily: 'Georgia, serif' }}>
             Create Account
           </h1>
-          <p className="text-xs text-slate-500 mt-1">Join ShopLux and start shopping</p>
+          <p className="text-xs text-slate-500 mt-1">Join GigaGoods and start shopping</p>
         </div>
 
         {/* Form */}
@@ -65,11 +69,13 @@ const Login = () => {
             </div>
           </div>
 
-
+<h3 className={`text-red-500 font-serif text-lg transition-opacity duration-150 ${error ? 'opacity-100' : 'opacity-0'}`}>
+  {error}
+</h3>
 
           {/* Submit */}
-          <button className="w-full py-3 rounded-xl font-semibold text-sm text-white bg-linear-to-r from-indigo-500 to-purple-600 hover:opacity-90 transition-opacity mt-1">
-            Create Account
+          <button className="w-full py-3 rounded-xl font-semibold text-lg text-white bg-linear-to-r from-indigo-500 to-purple-600 hover:opacity-90 transition-opacity mt-1">
+            Sign in
           </button>
         </form>
 
@@ -83,7 +89,7 @@ const Login = () => {
         {/* Sign in link */}
         <p className="text-center text-xs text-slate-500 pt-2">
           Already have an account?{' '}
-          <a href="/login" className="font-semibold text-indigo-500 hover:underline">Sign In</a>
+          <Link to="/signup" className="font-semibold text-indigo-500 hover:underline">Sign In</Link>
         </p>
 
       </div>

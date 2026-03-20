@@ -6,6 +6,8 @@ import Login from './pages/Login'
 import Cart from './pages/Cart'
 import Orders from './pages/Orders'
 import TrackOrders from './pages/TrackOrder'
+import UserProtection from './components/UserProtection'
+import Support from './pages/Support'
 
 const App = () => {
 
@@ -24,15 +26,19 @@ const App = () => {
     },
     {
       path: '/cart',
-      element: <div> <Cart /> </div>
+      element: <div><UserProtection> <Cart /> </UserProtection> </div>
     },
     {
       path: '/order',
-      element: <div> <Orders /> </div>
+      element: <div> <UserProtection> <Orders /> </UserProtection> </div>
     },
     {
       path: '/track/order',
-      element: <div> <TrackOrders /> </div>
+      element: <div> <UserProtection> <TrackOrders /> </UserProtection> </div>
+    },
+    {
+      path: '/support',
+      element: <div> <UserProtection> <Support/> </UserProtection> </div>
     },
   ])
 

@@ -38,6 +38,11 @@ class delete_from_cart(APIView):
     permission_classes = [IsAuthenticated]
     def delete(self, request, c_id, p_id):
         deleted_count, _ = CartItem.objects.get(cart_id=c_id, product_id=p_id).delete()
+    
+        cart = CartItem.objects.filter(cart_id=c_id)
+        if not cart.exists():
+            Cart.objects.get(id=c_id).delete()
+            
 
         if deleted_count > 0:
             return Response({"message": "Item removed"}, status=200)
@@ -84,33 +89,46 @@ class update_cart_qty(APIView):
 class orders(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
-        cart = Cart.objects.get(user=request.user)
+        try: 
+            cart = Cart.objects.get(user=request.user)
+
+        except Cart.DoesNotExist:
+            return Response({"error": "Cart is empty"}, status=400)
+        
         items = CartItem.objects.filter(cart=cart)
 
-        if not items:
+
+        if not items.exists():
             return Response({"error": "Cart is empty"}, status=400)
         
         total = 0
         for i in items:
-           total += i.product.price * (1 - Decimal(i.product.discount / 100))
-        
+            total += i.product.price * (1 - Decimal(i.product.discount) / Decimal(100))
+
         order = Order.objects.create(
-            user = request.user,
-            total_price = total,
-            shipping_address = request.data.get('shipping_address'),
-            city = request.data.get('city'),
-            postal_code = request.data.get('postal_code'),
-            whatsapp_number = request.data.get('whatsapp_number')
+            user=request.user,
+            total_price=total,
+            shipping_address=request.data.get('shipping_address'),
+            city=request.data.get('city'),
+            postal_code=request.data.get('postal_code'),
+            whatsapp_number=request.data.get('whatsapp_number')
         )
 
         for i in items:
             OrderItem.objects.create(
-                order= order,
-                product= i.product,
-                quantity= i.quantity,
-                color = i.color,
-                price= i.product.price * Decimal(1 - (i.product.discount / 100))
+                order=order,
+                product=i.product,
+                quantity=i.quantity,
+                color=i.color,
+                price=i.product.price * Decimal(1 - (i.product.discount / 100))
             )
+
+            # update stock for that color variant
+            prod_image = i.product.images.get(color=i.color)
+            prod_image.stock -= i.quantity
+            prod_image.save()
+
+
 
         items.delete()
         cart.delete()

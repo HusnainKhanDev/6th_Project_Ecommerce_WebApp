@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 const Signup = () => {
 
@@ -7,17 +8,28 @@ const Signup = () => {
   let [email, setemail] = useState("")
   let [password, setpassword] = useState("")
   let [phone, setphone] = useState("")
+  let [error, seterror] = useState("")
+
+  let navigate = useNavigate()
 
   let data = { full_name, email, password, phone }
 
   async function handleSignup(e) {
+    if (!full_name && !email && !password && !phone) {
+      seterror("All fields are required")
+      setTimeout(() => {seterror(null)}, 1500)
+      return
+    }
     e.preventDefault()
     try {
       console.log(data)
       let user = await axios.post("http://127.0.0.1:8000/auth/signup/", data)
       console.log(user)
+      navigate('/login')
     } catch (error) {
-      console.log(error.response.data) // shows Django error message
+      seterror(error.response.data?.error)
+      setTimeout(() => {seterror(null)}, 1500)
+      console.log(error.response.data?.error) // shows Django error message
     }
   }
 
@@ -41,7 +53,7 @@ const Signup = () => {
           <h1 className="text-xl font-bold text-slate-900" style={{ fontFamily: 'Georgia, serif' }}>
             Create Account
           </h1>
-          <p className="text-xs text-slate-500 mt-1">Join ShopLux and start shopping</p>
+          <p className="text-xs text-slate-500 mt-1">Join GigaGoods and start shopping</p>
         </div>
 
         {/* Form */}
@@ -87,6 +99,9 @@ const Signup = () => {
             </div>
           </div>
 
+          <h3 className={`text-red-500 font-serif text-lg transition-opacity duration-150 ${error ? 'opacity-100' : 'opacity-0'}`}>
+            {error}
+          </h3>
 
 
           {/* Submit */}

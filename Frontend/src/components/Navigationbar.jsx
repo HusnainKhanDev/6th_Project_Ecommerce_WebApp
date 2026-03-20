@@ -48,7 +48,7 @@ const Navigationbar = () => {
               d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
         </div>
-        <span className="text-lg font-bold text-white">ShopLux</span>
+        <span className="text-lg font-bold text-white">GigaGoods</span>
       </NavbarBrand>
 
       {/* Login/Logout + Toggle */}
@@ -63,32 +63,32 @@ const Navigationbar = () => {
         <NavbarToggle className="text-gray-400 border-0 focus:ring-0 hover:bg-white/10" />
       </div>
 
-      {/* Nav Links — all using React Router Link ✅ */}
+      
       <NavbarCollapse>
         <Link to="/"
-          className="block py-2 font-medium md:hover:text-indigo-400 transition-colors"
+          className="block py-2 font-medium md:hover:text-indigo-400 transition-all active:scale-95 duration-300"
           style={{ color: '#818cf8' }}>
           Home
         </Link>
-        <Link to="/products"
+        <a href="#section1"
           className="block py-2 font-medium md:hover:text-indigo-400 transition-colors"
-          style={{ color: '#94a3b8' }}>
+          style={{ color: '#818cf8' }}>
           Products
-        </Link>
+        </a>
         <Link to="/track/order"
           className="block py-2 font-medium md:hover:text-indigo-400 transition-colors"
-          style={{ color: '#94a3b8' }}>
+          style={{ color: '#818cf8' }}>
           Track order
         </Link>
         <Link to="/cart"
           className="block py-2 font-medium md:hover:text-indigo-400 transition-colors"
-          style={{ color: '#94a3b8' }}>
+          style={{ color: '#818cf8' }}>
           Cart
         </Link>
-        <Link to="/about"
+        <Link to="/support"
           className="block py-2 font-medium md:hover:text-indigo-400 transition-colors"
-          style={{ color: '#94a3b8' }}>
-          About
+          style={{ color: '#818cf8' }}>
+          Support
         </Link>
       </NavbarCollapse>
 

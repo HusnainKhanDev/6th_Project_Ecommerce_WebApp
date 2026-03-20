@@ -130,6 +130,17 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Email settings using gmail
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  
+EMAIL_PORT = 587  # SMTP server port (587 for TLS, 465 for SSL)
+EMAIL_USE_TLS = True  # True for TLS, False for SSL Transport Layer Security
+EMAIL_HOST_USER = 'hasnainkhan6106@gmail.com'
+EMAIL_HOST_PASSWORD = os.getenv('Emial_APP_PASSWORD')  # SMTP server password
+EMAIL_USE_SSL = False  # Set to True if using SSL
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Default sender email address
+
+
 MEDIA_URL = "/media/" # tells the images location where they are
 MEDIA_ROOT = BASE_DIR / "media" # create the url to get images
 
